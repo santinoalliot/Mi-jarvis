@@ -5,42 +5,111 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>J.A.R.V.I.S.</title>
     <style>
-        body {
-            margin: 0;
-            background-color: #020813;
-            color: #00d2ff;
-            font-family: monospace;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-        #canvas-container {
-            position: relative;
-            width: 280px;
-            height: 280px;
-        }
-        #status {
-            margin-top: 25px;
-            font-size: 14px;
-            letter-spacing: 2px;
-            text-align: center;
-            max-width: 80%;
-        }
-        button {
-            margin-top: 25px;
-            background: transparent;
-            border: 2px solid #00d2ff;
-            color: #00d2ff;
-            padding: 12px 28px;
-            border-radius: 25px;
-            font-size: 16px;
-            box-shadow: 0 0 15px #00d2ff;
-            font-weight: bold;
-        }
-    </style>
+    * {
+        box-sizing: border-box;
+    }
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: #020b14;
+        /* Fondo con malla/cuadrícula cibernética y degradados futuristas */
+        background-image: 
+            radial-gradient(circle at 50% 50%, rgba(0, 210, 255, 0.15) 0%, transparent 60%),
+            linear-gradient(rgba(0, 210, 255, 0.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0, 210, 255, 0.05) 1px, transparent 1px);
+        background-size: 100% 100%, 30px 30px, 30px 30px;
+        color: #00d2ff;
+        font-family: 'Courier New', Courier, monospace;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        overflow: hidden;
+        text-shadow: 0 0 8px rgba(0, 210, 255, 0.6);
+    }
+
+    /* Esquinas decorativas estilo HUD Stark */
+    body::before, body::after {
+        content: "";
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        border: 2px solid #00d2ff;
+        pointer-events: none;
+    }
+    body::before {
+        top: 20px;
+        left: 20px;
+        border-right: none;
+        border-bottom: none;
+    }
+    body::after {
+        bottom: 20px;
+        right: 20px;
+        border-left: none;
+        border-top: none;
+    }
+
+    #canvas-container {
+        position: relative;
+        width: 300px;
+        height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Anillo exterior decorativo con rotación continua */
+    #canvas-container::before {
+        content: "";
+        position: absolute;
+        width: 290px;
+        height: 290px;
+        border: 2px dashed rgba(0, 210, 255, 0.4);
+        border-radius: 50%;
+        animation: rotateHud 20s linear infinite;
+    }
+
+    @keyframes rotateHud {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    #status {
+        margin-top: 30px;
+        font-size: 14px;
+        letter-spacing: 3px;
+        text-align: center;
+        max-width: 85%;
+        text-transform: uppercase;
+        border-bottom: 1px solid rgba(0, 210, 255, 0.3);
+        padding-bottom: 5px;
+    }
+
+    button {
+        margin-top: 30px;
+        background: rgba(0, 210, 255, 0.1);
+        border: 2px solid #00d2ff;
+        color: #00d2ff;
+        padding: 14px 32px;
+        border-radius: 4px;
+        font-size: 14px;
+        letter-spacing: 2px;
+        box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
+        font-weight: bold;
+        text-transform: uppercase;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(5px);
+    }
+
+    button:active {
+        background: #00d2ff;
+        color: #020b14;
+        box-shadow: 0 0 25px #00d2ff;
+    }
+</style>
+
 </head>
 <body>
 
