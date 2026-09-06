@@ -3,120 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>J.A.R.V.I.S.</title>
+    <title>J.A.R.V.I.S. HUD</title>
     <style>
-    * {
-        box-sizing: border-box;
-    }
-    body {
-        margin: 0;
-        padding: 0;
-        background-color: #020b14;
-        /* Fondo con malla/cuadrícula cibernética y degradados futuristas */
-        background-image: 
-            radial-gradient(circle at 50% 50%, rgba(0, 210, 255, 0.15) 0%, transparent 60%),
-            linear-gradient(rgba(0, 210, 255, 0.05) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0, 210, 255, 0.05) 1px, transparent 1px);
-        background-size: 100% 100%, 30px 30px, 30px 30px;
-        color: #00d2ff;
-        font-family: 'Courier New', Courier, monospace;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-        overflow: hidden;
-        text-shadow: 0 0 8px rgba(0, 210, 255, 0.6);
-    }
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #030810;
+            /* Fondo con malla cybertécnica y resplandor radial */
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(0, 210, 255, 0.12) 0%, transparent 70%),
+                linear-gradient(rgba(0, 210, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 210, 255, 0.03) 1px, transparent 1px);
+            background-size: 100% 100%, 20px 20px, 20px 20px;
+            color: #00d2ff;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+            text-shadow: 0 0 6px rgba(0, 210, 255, 0.7);
+        }
 
-    /* Esquinas decorativas estilo HUD Stark */
-    body::before, body::after {
-        content: "";
-        position: absolute;
-        width: 40px;
-        height: 40px;
-        border: 2px solid #00d2ff;
-        pointer-events: none;
-    }
-    body::before {
-        top: 20px;
-        left: 20px;
-        border-right: none;
-        border-bottom: none;
-    }
-    body::after {
-        bottom: 20px;
-        right: 20px;
-        border-left: none;
-        border-top: none;
-    }
+        /* Marcos y marcas de esquinas HUD */
+        .hud-corner {
+            position: absolute;
+            font-size: 10px;
+            letter-spacing: 1px;
+            color: rgba(0, 210, 255, 0.6);
+            padding: 10px;
+        }
+        .top-left { top: 15px; left: 15px; border-left: 2px solid #00d2ff; border-top: 2px solid #00d2ff; }
+        .top-right { top: 15px; right: 15px; border-right: 2px solid #00d2ff; border-top: 2px solid #00d2ff; text-align: right; }
+        .bottom-left { bottom: 15px; left: 15px; border-left: 2px solid #00d2ff; border-bottom: 2px solid #00d2ff; }
+        .bottom-right { bottom: 15px; right: 15px; border-right: 2px solid #00d2ff; border-bottom: 2px solid #00d2ff; text-align: right; }
 
-    #canvas-container {
-        position: relative;
-        width: 300px;
-        height: 300px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+        /* Contenedor central del núcleo con anillos giratorios */
+        #hud-container {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-    /* Anillo exterior decorativo con rotación continua */
-    #canvas-container::before {
-        content: "";
-        position: absolute;
-        width: 290px;
-        height: 290px;
-        border: 2px dashed rgba(0, 210, 255, 0.4);
-        border-radius: 50%;
-        animation: rotateHud 20s linear infinite;
-    }
+        /* Anillo exterior segmentado en rotación horaria */
+        .ring-outer {
+            position: absolute;
+            width: 310px;
+            height: 310px;
+            border: 2px dashed rgba(0, 210, 255, 0.5);
+            border-radius: 50%;
+            animation: rotateClockwise 25s linear infinite;
+        }
 
-    @keyframes rotateHud {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
+        /* Anillo secundario con ticks en rotación antihoraria */
+        .ring-middle {
+            position: absolute;
+            width: 270px;
+            height: 270px;
+            border: 3px dotted rgba(0, 240, 255, 0.7);
+            border-radius: 50%;
+            animation: rotateCounter 15s linear infinite;
+        }
 
-    #status {
-        margin-top: 30px;
-        font-size: 14px;
-        letter-spacing: 3px;
-        text-align: center;
-        max-width: 85%;
-        text-transform: uppercase;
-        border-bottom: 1px solid rgba(0, 210, 255, 0.3);
-        padding-bottom: 5px;
-    }
+        @keyframes rotateClockwise {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
 
-    button {
-        margin-top: 30px;
-        background: rgba(0, 210, 255, 0.1);
-        border: 2px solid #00d2ff;
-        color: #00d2ff;
-        padding: 14px 32px;
-        border-radius: 4px;
-        font-size: 14px;
-        letter-spacing: 2px;
-        box-shadow: 0 0 15px rgba(0, 210, 255, 0.4);
-        font-weight: bold;
-        text-transform: uppercase;
-        transition: all 0.3s ease;
-        backdrop-filter: blur(5px);
-    }
+        @keyframes rotateCounter {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(-360deg); }
+        }
 
-    button:active {
-        background: #00d2ff;
-        color: #020b14;
-        box-shadow: 0 0 25px #00d2ff;
-    }
-</style>
+        canvas {
+            position: relative;
+            z-index: 2;
+            border-radius: 50%;
+        }
 
+        /* Muestra de estado de Jarvis */
+        #status {
+            margin-top: 25px;
+            font-size: 13px;
+            letter-spacing: 3px;
+            text-align: center;
+            max-width: 85%;
+            text-transform: uppercase;
+            background: rgba(0, 210, 255, 0.05);
+            border-left: 3px solid #00d2ff;
+            border-right: 3px solid #00d2ff;
+            padding: 6px 16px;
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
+        }
+
+        /* Botón futurista */
+        button {
+            margin-top: 25px;
+            background: rgba(0, 210, 255, 0.1);
+            border: 1px solid #00d2ff;
+            color: #00d2ff;
+            padding: 12px 28px;
+            border-radius: 2px;
+            font-size: 13px;
+            letter-spacing: 2px;
+            box-shadow: 0 0 12px rgba(0, 210, 255, 0.4);
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+        }
+
+        button:active {
+            background: #00d2ff;
+            color: #030810;
+            box-shadow: 0 0 20px #00d2ff;
+        }
+    </style>
 </head>
 <body>
 
-    <div id="canvas-container">
-        <canvas id="jarvisCore" width="280" height="280"></canvas>
+    <div class="hud-corner top-left">
+        SYS.VER // 4.0.8<br>
+        CORE: ACTIVE
     </div>
-    <div id="status">SISTEMA OFFLINE</div>
+    <div class="hud-corner top-right">
+        LOC: SANTA FE<br>
+        NET: SECURE
+    </div>
+    <div class="hud-corner bottom-left">
+        AUDIO: STT/TTS<br>
+        MODE: INTERACTIVE
+    </div>
+    <div class="hud-corner bottom-right">
+        J.A.R.V.I.S.<br>
+        STARK IND.
+    </div>
+
+    <div id="hud-container">
+        <div class="ring-outer"></div>
+        <div class="ring-middle"></div>
+        <canvas id="jarvisCore" width="240" height="240"></canvas>
+    </div>
+
+    <div id="status">SISTEMA ONLINE // EN ESPERA</div>
     <button id="startBtn" onclick="initJarvis()">INICIAR JARVIS</button>
 
 <script>
@@ -126,31 +163,51 @@ let canvas = document.getElementById('jarvisCore');
 let ctx = canvas.getContext('2d');
 let audioCtx, analyser, dataArray;
 
+// Dibujar el núcleo dinámico con gradientes y ticks
 function drawCore(intensity = 0) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     let centerX = canvas.width / 2;
     let centerY = canvas.height / 2;
-    let radius = 55 + intensity * 0.4;
+    let radius = 45 + intensity * 0.45;
 
-    let gradient = ctx.createRadialGradient(centerX, centerY, 5, centerX, centerY, radius + 35);
-    gradient.addColorStop(0, '#00f0ff');
-    gradient.addColorStop(0.6, '#0044ff');
+    // Resplandor del núcleo
+    let gradient = ctx.createRadialGradient(centerX, centerY, 5, centerX, centerY, radius + 30);
+    gradient.addColorStop(0, '#00ffff');
+    gradient.addColorStop(0.4, '#0088ff');
+    gradient.addColorStop(0.8, '#002266');
     gradient.addColorStop(1, 'transparent');
 
     ctx.fillStyle = gradient;
     ctx.beginPath();
-    ctx.arc(centerX, centerY, radius + 35, 0, Math.PI * 2);
+    ctx.arc(centerX, centerY, radius + 30, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.strokeStyle = '#00d2ff';
+    // Marcadores radiales interiores (Ticks tipo HUD)
+    ctx.strokeStyle = '#00f0ff';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 12; i++) {
+        let angle = (i * Math.PI) / 6;
+        let x1 = centerX + Math.cos(angle) * (radius + 5);
+        let y1 = centerY + Math.sin(angle) * (radius + 5);
+        let x2 = centerX + Math.cos(angle) * (radius + 12);
+        let y2 = centerY + Math.sin(angle) * (radius + 12);
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+    }
+
+    // Anillo interno brillante
+    ctx.strokeStyle = '#00ffff';
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.arc(centerX, centerY, radius + 10, 0, Math.PI * 2);
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
     ctx.stroke();
 
-    ctx.fillStyle = '#00ffff';
+    // Centro sólido reactivo
+    ctx.fillStyle = '#00d2ff';
     ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.arc(centerX, centerY, radius * 0.6, 0, Math.PI * 2);
     ctx.fill();
 }
 
@@ -180,7 +237,7 @@ async function initJarvis() {
 
 function animate() {
     requestAnimationFrame(animate);
-    if(analyser) {
+    if (analyser) {
         analyser.getByteFrequencyData(dataArray);
         let sum = dataArray.reduce((a, b) => a + b, 0);
         let average = sum / dataArray.length;
@@ -205,8 +262,9 @@ function startSpeechRecognition() {
         await queryJarvis(text);
     };
 
-    recognition.onend = () => {
-        // Reiniciar escucha tras finalizar
+    recognition.onerror = () => {
+        document.getElementById('status').innerText = "ESCUCHANDO...";
+        startSpeechRecognition();
     };
 
     recognition.start();
@@ -223,7 +281,7 @@ async function queryJarvis(userText) {
             body: JSON.stringify({
                 model: 'gpt-4o-mini',
                 messages: [
-                    { role: 'system', content: 'Eres JARVIS, la IA de Tony Stark. Responde de forma muy breve, educada, elegante y formal en español.' },
+                    { role: 'system', content: 'Eres JARVIS, la IA de Iron Man. Responde de forma breve, educada, formal y muy elegante en español.' },
                     { role: 'user', content: userText }
                 ]
             })
@@ -233,12 +291,12 @@ async function queryJarvis(userText) {
         const reply = data.choices[0].message.content;
         speak(reply);
     } catch (e) {
-        document.getElementById('status').innerText = "ERROR AL CONECTAR CON JARVIS";
+        document.getElementById('status').innerText = "ERROR DE CONEXIÓN";
     }
 }
 
 function speak(text) {
-    document.getElementById('status').innerText = "RESPONDIENDO...";
+    document.getElementById('status').innerText = "RESPONDIONDO...";
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'es-ES';
     utterance.pitch = 0.85;
