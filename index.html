@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>J.A.R.V.I.S.</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #020813;
+            color: #00d2ff;
+            font-family: monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #canvas-container {
+            position: relative;
+            width: 280px;
+            height: 280px;
+        }
+        #status {
+            margin-top: 25px;
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-align: center;
+            max-width: 80%;
+        }
+        button {
+            margin-top: 25px;
+            background: transparent;
+            border: 2px solid #00d2ff;
+            color: #00d2ff;
+            padding: 12px 28px;
+            border-radius: 25px;
+            font-size: 16px;
+            box-shadow: 0 0 15px #00d2ff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container">
+        <canvas id="jarvisCore" width="280" height="280"></canvas>
+    </div>
+    <div id="status">SISTEMA OFFLINE</div>
+    <button id="startBtn" onclick="initJarvis()">INICIAR JARVIS</button>
+
+<script>
+const API_KEY = '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'; // <--- PEGA TU CLAVE DE OPENAI AQUÍ
+
+let canvas = document.getElementById('jarvisCore');
+let ctx = canvas.getContext('2d');
+let audioCtx, analyser, dataArray;
+
+function drawCore(intensity = 0) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let centerX = canvas.width / 2;
+    let centerY = canvas.height / 2;
+    let radius = 55 + intensity * 0.4;
+
+    let gradient = ctx.createRadialGradient(centerX, centerY, 5, centerX, centerY, radius + 35);
+    gradient.addColorStop(0, '#00f0ff');
+    gradient.addColorStop(0.6, '#0044ff');
+    gradient.addColorStop(1, 'transparent');
+
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius + 35, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = '#00d2ff';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius + 10, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.fillStyle = '#00ffff';
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+drawCore();
+
+async function initJarvis() {
+    document.getElementById('startBtn').style.display = 'none';
+    document.getElementById('status').innerText = "ESCUCHANDO...";
+
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    analyser = audioCtx.createAnalyser();
+
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const source = audioCtx.createMediaStreamSource(stream);
+        source.connect(analyser);
+
+        analyser.fftSize = 64;
+        dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+        animate();
+        startSpeechRecognition();
+    } catch(err) {
+        document.getElementById('status').innerText = "ERROR DE MICRÓFONO";
+    }
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    if(analyser) {
+        analyser.getByteFrequencyData(dataArray);
+        let sum = dataArray.reduce((a, b) => a + b, 0);
+        let average = sum / dataArray.length;
+        drawCore(average);
+    }
+}
+
+function startSpeechRecognition() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        document.getElementById('status').innerText = "NAVEGADOR NO COMPATIBLE";
+        return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'es-ES';
+    recognition.continuous = false;
+
+    recognition.onresult = async (event) => {
+        const text = event.results[0][0].transcript;
+        document.getElementById('status').innerText = "PROCESANDO...";
+        await queryJarvis(text);
+    };
+
+    recognition.onend = () => {
+        // Reiniciar escucha tras finalizar
+    };
+
+    recognition.start();
+}
+
+async function queryJarvis(userText) {
+    try {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${API_KEY}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4o-mini',
+                messages: [
+                    { role: 'system', content: 'Eres JARVIS, la IA de Tony Stark. Responde de forma muy breve, educada, elegante y formal en español.' },
+                    { role: 'user', content: userText }
+                ]
+            })
+        });
+
+        const data = await response.json();
+        const reply = data.choices[0].message.content;
+        speak(reply);
+    } catch (e) {
+        document.getElementById('status').innerText = "ERROR AL CONECTAR CON JARVIS";
+    }
+}
+
+function speak(text) {
+    document.getElementById('status').innerText = "RESPONDIENDO...";
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'es-ES';
+    utterance.pitch = 0.85;
+    utterance.rate = 1.0;
+
+    utterance.onend = () => {
+        document.getElementById('status').innerText = "ESCUCHANDO...";
+        startSpeechRecognition();
+    };
+
+    window.speechSynthesis.speak(utterance);
+}
+</script>
+</body>
+</html>
